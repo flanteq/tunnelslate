@@ -1,0 +1,19 @@
+# Paths below are INSIDE the Prometheus container, not the panel container.
+rule_files:
+  - /etc/prometheus/tunnelslate-alerts.yml
+scrape_configs:
+  - job_name: tunnelslate
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    scheme: https
+    tls_config:
+      # CA that signed the metrics SERVER certificate.
+      ca_file: /etc/prometheus/certs/server-ca.crt
+      # Monitoring CLIENT certificate and key, signed by the CA trusted by the panel.
+      cert_file: /etc/prometheus/certs/monitoring.crt
+      key_file: /etc/prometheus/certs/monitoring.key
+      # Must match a DNS SAN of the panel's metrics server certificate.
+      server_name: metrics.example.com
+      min_version: TLS12
+    static_configs:
+      - targets: ['tunnelslate:9090']

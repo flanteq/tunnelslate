@@ -1,0 +1,84 @@
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "10"
+
+# The panel is available only on the host; point host nginx to 127.0.0.1:8090.
+# Bind mounts use ./data relative to this file; adjust them for your host.
+name: tunnelslate
+
+services:
+  tunnelslate:
+    container_name: tunnelslate
+    image: tunnelslate:local
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment:
+      TUNNELSLATE_PUBLIC_URL: ${TUNNELSLATE_PUBLIC_URL:-http://localhost:8090}
+      TUNNELSLATE_BASE_PATH: ${TUNNELSLATE_BASE_PATH:-}
+      TUNNELSLATE_COOKIE_SECURE: ${TUNNELSLATE_COOKIE_SECURE:-false}
+      TUNNELSLATE_SESSION_TTL: ${TUNNELSLATE_SESSION_TTL:-12h}
+      TUNNELSLATE_AUDIT_RETENTION_DAYS: ${TUNNELSLATE_AUDIT_RETENTION_DAYS:-365}
+      TUNNELSLATE_STATS_RETENTION_DAYS: ${TUNNELSLATE_STATS_RETENTION_DAYS:-90}
+      TUNNELSLATE_TRUSTED_PROXIES: ${TUNNELSLATE_TRUSTED_PROXIES:-}
+    ports:
+      - "127.0.0.1:8090:8080/tcp"
+      # Optional Prometheus endpoint; enable it in Panel settings first.
+      # - "127.0.0.1:9091:9090/tcp"
+    volumes:
+      - ./data/app:/data/app
+      - ./data/pki:/data/pki
+      - ./data/openvpn:/data/openvpn
+      - ./data/ccd:/data/ccd
+      - ./data/control:/run/tunnelslate
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    cap_add: [CHOWN, FOWNER, DAC_OVERRIDE, SETUID, SETGID]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: [CMD, /app/tunnelslate, healthcheck]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    logging: *default-logging
+
+  tunnelslate-vpn:
+    container_name: tunnelslate-vpn
+    image: tunnelslate-vpn:local
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: docker/openvpn.Dockerfile
+    depends_on:
+      tunnelslate:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:1195:1194/udp"
+      - "0.0.0.0:1195:1194/tcp"
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add: [NET_ADMIN]
+    security_opt:
+      - no-new-privileges:true
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    read_only: true
+    tmpfs:
+      - /run:size=16m,mode=0755
+      - /tmp:size=16m,mode=1777
+    volumes:
+      - ./data/openvpn:/etc/openvpn/runtime:ro
+      - ./data/ccd:/etc/openvpn/ccd:ro
+      - ./data/control:/run/tunnelslate
+    logging: *default-logging
+

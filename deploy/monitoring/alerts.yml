@@ -1,0 +1,58 @@
+groups:
+  - name: tunnelslate
+    rules:
+      - alert: TunnelSlateMetricsUnavailable
+        expr: up{job="tunnelslate"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: 'TunnelSlate metrics are unavailable on {{ $labels.instance }}'
+          description: 'Check the panel, port publication and mTLS certificates.'
+      - alert: TunnelSlateSnapshotIncomplete
+        expr: tunnelslate_metrics_collection_success == 0
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: 'TunnelSlate monitoring snapshot is incomplete'
+      - alert: TunnelSlateVPNUnavailable
+        expr: tunnelslate_vpn_up == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: 'OpenVPN is unavailable on {{ $labels.instance }}'
+      - alert: TunnelSlateProfileCertificateExpiring
+        expr: (tunnelslate_profile_certificate_not_after_timestamp_seconds - time() < 14 * 86400) and (tunnelslate_profile_certificate_not_after_timestamp_seconds > time())
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: 'VPN certificate expires soon: {{ $labels.client }} / {{ $labels.device }}'
+          description: 'Reissue the profile before its certificate expires.'
+      - alert: TunnelSlateProfileCertificateExpired
+        expr: tunnelslate_profile_certificate_not_after_timestamp_seconds <= time()
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: 'VPN certificate expired: {{ $labels.client }} / {{ $labels.device }}'
+      - alert: TunnelSlateInfrastructureCertificateExpiring
+        expr: tunnelslate_certificate_not_after_timestamp_seconds - time() < 30 * 86400
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: 'TunnelSlate {{ $labels.kind }} certificate expires soon'
+      - alert: TunnelSlateCRLExpiring
+        expr: tunnelslate_crl_next_update_timestamp_seconds - time() < 7 * 86400
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: 'TunnelSlate certificate revocation list expires soon'
+      - alert: TunnelSlateStatisticsStale
+        expr: time() - tunnelslate_statistics_last_success_timestamp_seconds > 60
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: 'TunnelSlate statistics ingestion has stopped'
+      - alert: TunnelSlateAuthenticationFailures
+        expr: sum by (instance, scope) (increase(tunnelslate_authentication_failures_total[15m])) >= 5
+        labels: {severity: warning}
+        annotations:
+          summary: 'Repeated {{ $labels.scope }} authentication failures on {{ $labels.instance }}'

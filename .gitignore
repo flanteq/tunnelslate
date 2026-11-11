@@ -1,0 +1,14 @@
+.env
+/docker-compose.yml
+.env.*
+!.env.example
+/data/
+frontend/node_modules/
+frontend/dist/
+backend/tunnelslate
+*.log
+.DS_Store
+
+# Local maintainer notes; not part of the public repository.
+/.local/
+AGENTS.md

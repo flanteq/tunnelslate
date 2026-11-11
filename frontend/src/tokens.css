@@ -1,0 +1,5 @@
+:root{--panel-padding-inline:23px;--panel-padding-block:20px;color-scheme:light;--bg:#f6f8f8;--surface:#fff;--text:#233b3c;--muted:#7e8e91;--border:#e7eceb;--border-strong:#d5dfda;--accent:#218360;--accent-soft:#edf7f1;--hover:#f3f6f5;--banner-bg:#ecf5ef;--banner-border:#d5e7db;--banner-text:#25483b;--warning:#a48039;--warning-soft:#fff6df;--error:#ac3737;--danger-button:#ac3737;--error-bg:#fff0ee}
+:root[data-theme=dark]{color-scheme:dark;--bg:#152326;--surface:#1c2e31;--text:#e0ece8;--muted:#90a7a2;--border:#2d4141;--border-strong:#3c5551;--accent:#78d7ae;--accent-soft:#25463d;--hover:#25383a;--banner-bg:#244036;--banner-border:#35594a;--banner-text:#dfefdf;--warning:#d4b677;--warning-soft:#433d29;--error:#f3a2a2;--error-bg:#492d31}
+:root[data-theme=dark] .primary{background:#348f69;color:#fff}
+
+@media(max-width:780px){:root{--panel-padding-inline:18px;--panel-padding-block:18px}}

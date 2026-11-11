@@ -1,0 +1,21 @@
+{
+  "name": "tunnelslate",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "check": "vue-tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "build": "npm run check && vite build"
+  },
+  "dependencies": {
+    "vue": "3.5.45"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.4",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vue-tsc": "3.2.5"
+  }
+}

@@ -1,0 +1,39 @@
+name: tunnelslate-tools
+
+services:
+  tunnelslate-backend-test:
+    container_name: tunnelslate-backend-test
+    build:
+      context: ..
+      dockerfile: docker/app.Dockerfile
+      target: backend-test
+    network_mode: none
+
+  tunnelslate-vpn-test:
+    container_name: tunnelslate-vpn-test
+    image: tunnelslate-vpn:local
+    build:
+      context: ..
+      dockerfile: docker/openvpn.Dockerfile
+    network_mode: none
+    cap_add: [NET_ADMIN]
+    entrypoint: [sh, -ec, "sh /tests/render-config.test.sh && sh /tests/mss.test.sh && sh /tests/network-policy.test.sh"]
+    volumes:
+      - ../docker/openvpn/tests:/tests:ro
+
+  tunnelslate-frontend-check:
+    container_name: tunnelslate-frontend-check
+    build:
+      context: ..
+      dockerfile: docker/app.Dockerfile
+      target: frontend-check
+    network_mode: none
+
+  tunnelslate-source-locks:
+    container_name: tunnelslate-source-locks
+    build:
+      context: ..
+      dockerfile: docker/app.Dockerfile
+      target: source-locks
+    volumes:
+      - ..:/source

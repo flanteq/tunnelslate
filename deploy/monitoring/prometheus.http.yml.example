@@ -1,0 +1,10 @@
+# Merge this job and rule_files into your existing Prometheus configuration.
+# HTTP has no authentication. Restrict the endpoint to the monitoring network.
+rule_files:
+  - /etc/prometheus/tunnelslate-alerts.yml
+scrape_configs:
+  - job_name: tunnelslate
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    static_configs:
+      - targets: ['tunnelslate:9090']
